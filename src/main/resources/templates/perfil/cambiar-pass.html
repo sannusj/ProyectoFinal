@@ -9,6 +9,8 @@
 
 <body class="bg-light">
 
+<th:block th:replace="~{fragments/navbar :: navbar}"></th:block>
+
 <div class="container mt-5">
     <div class="card shadow-sm p-4">
 
@@ -18,6 +20,7 @@
         <div th:if="${exito}" class="alert alert-success mt-3" th:text="${exito}"></div>
 
         <form th:action="@{/perfil/password}" method="post">
+            <input th:if="${_csrf != null}" type="hidden" name="_csrf" th:value="${_csrf.token}" />
 
             <div class="mb-3">
                 <label class="form-label">Contraseña actual</label>
@@ -41,6 +44,8 @@
 
     </div>
 </div>
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
 
 </body>
 </html>

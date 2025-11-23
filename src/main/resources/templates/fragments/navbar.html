@@ -39,8 +39,15 @@
                         <span th:text="${usuario.nombre}">Usuario</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                        <li><a class="dropdown-item" th:href="@{/perfil}">Mi perfil</a></li>
-                        <li><a class="dropdown-item" th:href="@{/perfil/mis-pedidos}">Mis pedidos</a></li>
+                        <li>
+                            <a class="dropdown-item"
+                               th:href="${usuario != null and usuario.rol.name() == 'ADMIN'} ? @{/admin/perfil} : @{/perfil}">
+                                Mi perfil
+                            </a>
+                        </li>
+                        <li th:if="${usuario == null or usuario.rol.name() != 'ADMIN'}">
+                            <a class="dropdown-item" th:href="@{/perfil/mis-pedidos}">Mis pedidos</a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" th:href="@{/auth/logout}">Cerrar sesión</a></li>
                     </ul>

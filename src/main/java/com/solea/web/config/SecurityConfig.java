@@ -43,7 +43,8 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/carrito/**", "/pedido/**", "/perfil/**").hasRole("USER")
+                        .requestMatchers("/carrito/**", "/pedido/**").hasRole("USER")
+                        .requestMatchers("/perfil/**").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/auth/**", "/", "/css/**", "/img/**").permitAll()
                         .anyRequest().authenticated()
                 )

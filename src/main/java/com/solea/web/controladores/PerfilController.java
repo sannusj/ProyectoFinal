@@ -1,5 +1,6 @@
 package com.solea.web.controladores;
 
+import com.solea.web.model.Rol;
 import com.solea.web.model.Usuario;
 import com.solea.web.servicios.ServicioPedidos;
 import com.solea.web.servicios.ServicioUsuarios;
@@ -44,7 +45,13 @@ public class PerfilController {
         if (u == null) return "redirect:/auth/login";
 
         model.addAttribute("usuario", u);
-        return "perfil/perfil";
+
+        // Si el usuario tiene rol ADMIN, mostrar la vista del admin, si no la vista normal
+        if (u.getRol() == Rol.ADMIN) {
+            return "admin/perfil"; // admin/perfil.html
+        }
+
+        return "perfil/perfil"; // perfil/perfil.html
     }
 
     // ----------------------------------------------------
@@ -129,4 +136,5 @@ public class PerfilController {
         model.addAttribute("pedidos", servicioPedidos.obtenerPedidosDeCliente(u.getId()));
         return "perfil/mis-pedidos";
     }
+
 }

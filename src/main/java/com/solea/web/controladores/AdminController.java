@@ -96,4 +96,12 @@ public class AdminController {
         return "redirect:/admin/pedidos/" + id;
     }
 
+    // -----------------------------------------------------------
+    // PERFIL ADMIN (compatibilidad: redirigir a /perfil unificado)
+    // -----------------------------------------------------------
+    @GetMapping("/perfil")
+    public String perfilAdminRedirect() {
+        return "redirect:/perfil";
+    }
+
 }

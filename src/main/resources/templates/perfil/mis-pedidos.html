@@ -9,6 +9,8 @@
 
 <body class="bg-light">
 
+<th:block th:replace="~{fragments/navbar :: navbar}"></th:block>
+
 <div class="container mt-5">
     <div class="card shadow-sm p-4">
 
@@ -36,10 +38,12 @@
             </tbody>
         </table>
 
-        <a th:href="@{/perfil}" class="btn btn-secondary mt-3">Volver</a>
+        <a th:href="@{/}" class="btn btn-secondary mt-3">Volver</a>
 
     </div>
 </div>
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
 
 </body>
 </html>
