@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pedido - Paso 3</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+
+    <!-- Barra de progreso -->
+    <div class="progress mb-4" style="height: 20px;">
+        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;">
+            Paso 3 de 3
+        </div>
+    </div>
+
+    <div class="card shadow p-4">
+        <h3 class="mb-3">Regalo y observaciones</h3>
+
+        <form action="/pedido/paso3" method="post">
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="regalo" id="regaloCheck">
+                <label class="form-check-label" for="regaloCheck">
+                    ¿Es para regalo?
+                </label>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Observaciones</label>
+                <textarea name="observaciones" class="form-control" rows="4"></textarea>
+            </div>
+
+            <button class="btn btn-success w-100" type="submit">Ir al resumen →</button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${prenda.nombre}">Detalle de Prenda</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<th:block th:replace="~{fragments/navbar :: navbar}"></th:block>
+
+
+<!-- CONTENIDO -->
+<div class="container py-5">
+    <div class="row">
+
+        <!-- IMAGEN -->
+        <div class="col-md-6">
+            <img th:src="@{'/imagenes/' + ${prenda.idPrenda}}"
+                 class="img-fluid rounded mb-3"
+                 alt="Imagen de la prenda" style="object-fit:cover; max-height:480px; width:100%;">
+        </div>
+
+        <!-- INFORMACIÓN -->
+        <div class="col-md-6">
+
+            <h1 class="fw-bold" th:text="${prenda.nombre}">Nombre de la Prenda</h1>
+
+            <p class="text-muted mt-2" th:text="${prenda.descripcion}">
+                Descripción del producto...
+            </p>
+
+            <p class="h3 mt-3">
+                $<span th:text="${prenda.precio}">99.999</span>
+            </p>
+
+            <p class="mt-3">
+                <strong>Categoría:</strong>
+                <span th:text="${prenda.categoria}">Categoría</span>
+            </p>
+
+            <p class="mt-2">
+                <strong>Stock disponible:</strong>
+                <span th:text="${prenda.stock}">0</span>
+            </p>
+
+            <!-- FORMULARIO PARA AGREGAR AL CARRITO -->
+            <form th:action="@{/carrito/agregar}" method="post" class="mt-4">
+                <input th:if="${_csrf != null}" type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                <input type="hidden" name="prendaId" th:value="${prenda.idPrenda}">
+
+                <!-- Cantidad -->
+                <div class="mb-3" style="max-width:140px;">
+                    <label class="form-label fw-bold">Cantidad:</label>
+                    <input type="number" name="cantidad" value="1" min="1"
+                           class="form-control">
+                </div>
+
+                <!-- Botón -->
+                <button type="submit" class="btn btn-dark btn-lg w-100">
+                    <i class="bi bi-cart-plus"></i> Agregar al Carrito
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Sección relacionada -->
+    <hr class="my-5">
+
+    <h3 class="fw-bold mb-4">También te puede gustar</h3>
+
+    <div class="row g-4">
+
+        <div class="col-md-3" th:each="p : ${relacionados}">
+            <div class="card shadow-sm h-100">
+                <img th:src="@{'/imagenes/' + ${p.idPrenda}}"
+                     class="card-img-top" style="height: 240px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold" th:text="${p.nombre}"></h5>
+                    <p class="text-muted">$<span th:text="${p.precio}"></span></p>
+                    <a th:href="@{'/detalle/' + ${p.idPrenda}}"
+                       class="btn btn-outline-dark btn-sm w-100">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- FOOTER -->
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+<!-- Bootstrap JS + Icons -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+</body>
+</html>

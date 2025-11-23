@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del Pedido | Admin</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+</head>
+
+<body>
+
+<!-- Navbar -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-5">
+
+    <a href="/admin/pedidos" class="btn btn-outline-dark mb-4">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+
+    <h2 class="fw-bold mb-4">
+        <i class="bi bi-receipt"></i> Pedido #<span th:text="${pedido.id}"></span>
+    </h2>
+
+    <!-- ------------------------ -->
+    <!-- DATOS DEL CLIENTE -->
+    <!-- ------------------------ -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-person"></i> Cliente</h5>
+        </div>
+
+        <div class="card-body">
+            <p><strong>Nombre:</strong> <span th:text="${pedido.usuario.nombre}"></span></p>
+            <p><strong>Email:</strong> <span th:text="${pedido.usuario.email}"></span></p>
+            <p><strong>Teléfono:</strong> <span th:text="${pedido.usuario.tel}"></span></p>
+            <p><strong>País:</strong> <span th:text="${pedido.usuario.pais}"></span></p>
+        </div>
+    </div>
+
+    <!-- ------------------------ -->
+    <!-- INFORMACIÓN DEL PEDIDO -->
+    <!-- ------------------------ -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Información del Pedido</h5>
+        </div>
+
+        <div class="card-body">
+            <p><strong>Fecha:</strong>
+                <span th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
+            </p>
+
+            <p><strong>Dirección:</strong>
+                <span th:text="${pedido.direccion}"></span>
+            </p>
+
+            <p><strong>Total:</strong>
+                $<span th:text="${pedido.total}"></span>
+            </p>
+
+            <p><strong>Estado actual:</strong>
+                <span class="badge"
+                      th:classappend="
+                        ${pedido.estado.name()}=='NUEVO' ? ' bg-warning text-dark' :
+                        (${pedido.estado.name()}=='EN_PROCESO' ? ' bg-primary' :
+                        (${pedido.estado.name()}=='ENVIADO' ? ' bg-success' :
+                        (${pedido.estado.name()}=='PAGADO' ? ' bg-info text-dark' :
+                        (${pedido.estado.name()}=='ENTREGADO' ? ' bg-success' : ' bg-danger'))))
+                      "
+                      th:text="${pedido.estado}">
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <!-- ------------------------ -->
+    <!-- PRODUCTOS DEL PEDIDO -->
+    <!-- ------------------------ -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-box-seam"></i> Productos del Pedido</h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Prenda</th>
+                        <th>Cantidad</th>
+                        <th>Precio unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="prod : ${pedido.productos}">
+                        <td th:text="${prod.nombrePrenda}"></td>
+                        <td th:text="${prod.cantidad}"></td>
+                        <td>$<span th:text="${prod.precioUnitario}"></span></td>
+                        <td>$<span th:text="${prod.subtotal}"></span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ------------------------ -->
+    <!-- CAMBIAR ESTADO -->
+    <!-- ------------------------ -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-pen"></i> Cambiar Estado</h5>
+        </div>
+
+        <div class="card-body">
+
+            <form th:action="@{'/admin/pedidos/' + ${pedido.id} + '/estado'}" method="post">
+                <input th:if="${_csrf != null}" type="hidden" name="_csrf" th:value="${_csrf.token}" />
+
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label">Nuevo estado</label>
+                        <select name="estado" class="form-select" required>
+                            <option th:selected="${pedido.estado.name()=='NUEVO'}" value="NUEVO">Nuevo</option>
+                            <option th:selected="${pedido.estado.name()=='EN_PROCESO'}" value="EN_PROCESO">En proceso</option>
+                            <option th:selected="${pedido.estado.name()=='PAGADO'}" value="PAGADO">Pagado</option>
+                            <option th:selected="${pedido.estado.name()=='ENVIADO'}" value="ENVIADO">Enviado</option>
+                            <option th:selected="${pedido.estado.name()=='ENTREGADO'}" value="ENTREGADO">Entregado</option>
+                            <option th:selected="${pedido.estado.name()=='CANCELADO'}" value="CANCELADO">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-success mt-3">
+                    <i class="bi bi-check-circle"></i> Guardar cambios
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nosotros - Solea</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .section-title {
+            font-weight: 800;
+            font-size: 2.4rem;
+        }
+        .info-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            height: 100%;
+        }
+        .info-icon {
+            font-size: 40px;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<th:block th:replace="fragments/navbar :: navbar"></th:block>
+
+
+<!-- ===================== HERO ===================== -->
+<header class="bg-dark text-white py-5">
+    <div class="container text-center">
+        <h1 class="fw-bold">Sobre Nosotros</h1>
+        <p class="opacity-75 mt-2">
+            Conoce nuestra historia, misión y el propósito que nos mueve todos los días.
+        </p>
+    </div>
+</header>
+
+
+<!-- ===================== HISTORIA ===================== -->
+<section class="container py-5">
+    <h2 class="section-title text-center mb-4">Nuestra Historia</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <p class="text-muted fs-5">
+                Solea nació con la intención de ofrecer prendas modernas, cómodas y accesibles,
+                sin sacrificar estilo ni calidad. Desde nuestros primeros pasos, nos hemos enfocado
+                en construir una experiencia de compra simple, confiable y cercana para todos nuestros
+                clientes.
+            </p>
+        </div>
+    </div>
+</section>
+
+
+<!-- ===================== MISIÓN, VISIÓN, VALORES ===================== -->
+<section class="container py-5">
+    <div class="row g-4">
+
+        <!-- MISIÓN -->
+        <div class="col-md-4">
+            <div class="info-card text-center">
+                <i class="bi bi-bullseye info-icon mb-3"></i>
+                <h4 class="fw-bold mb-3">Nuestra Misión</h4>
+                <p class="text-muted">
+                    Brindar moda de calidad que inspire confianza, comodidad y autenticidad en cada persona.
+                </p>
+            </div>
+        </div>
+
+        <!-- VISIÓN -->
+        <div class="col-md-4">
+            <div class="info-card text-center">
+                <i class="bi bi-lightbulb info-icon mb-3"></i>
+                <h4 class="fw-bold mb-3">Nuestra Visión</h4>
+                <p class="text-muted">
+                    Ser una marca referente en innovación, sostenibilidad y atención al cliente dentro del mercado textil digital.
+                </p>
+            </div>
+        </div>
+
+        <!-- VALORES -->
+        <div class="col-md-4">
+            <div class="info-card text-center">
+                <i class="bi bi-heart info-icon mb-3"></i>
+                <h4 class="fw-bold mb-3">Nuestros Valores</h4>
+                <p class="text-muted">
+                    Honestidad, creatividad, respeto por nuestros clientes y compromiso con una moda responsable.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ===================== EQUIPO ===================== -->
+<section class="container py-5">
+    <h2 class="section-title text-center mb-4">Nuestro Equipo</h2>
+
+    <p class="text-center text-muted fs-5 mb-5">
+        Personas apasionadas trabajando para ofrecerte lo mejor.
+    </p>
+
+    <div class="row g-4 justify-content-center">
+
+        <div class="col-md-4">
+            <div class="info-card text-center">
+                <img src="https://via.placeholder.com/140" class="rounded-circle mb-3" alt="Persona">
+                <h5 class="fw-bold mb-1">Nombre del miembro</h5>
+                <p class="text-muted">Cargo principal</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="info-card text-center">
+                <img src="https://via.placeholder.com/140" class="rounded-circle mb-3" alt="Persona">
+                <h5 class="fw-bold mb-1">Nombre del miembro</h5>
+                <p class="text-muted">Cargo principal</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- FOOTER -->
+<th:block th:replace="fragments/footer :: footer"></th:block>
+
+
+<!-- Bootstrap JS & Icons -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Administrar Usuarios</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Gestión de Usuarios</h2>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <!-- Tabla -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Teléfono</th>
+                        <th>País</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="u : ${usuarios}">
+                        <td th:text="${u.id}"></td>
+                        <td th:text="${u.nombre}"></td>
+                        <td th:text="${u.email}"></td>
+
+                        <td>
+                            <span class="badge bg-primary" th:if="${u.rol.name() == 'ADMIN'}">ADMIN</span>
+                            <span class="badge bg-secondary" th:if="${u.rol.name() == 'USER'}">USER</span>
+                        </td>
+
+                        <td th:text="${u.tel}"></td>
+                        <td th:text="${u.pais}"></td>
+
+                        <td class="text-center">
+
+                            <a class="btn btn-sm btn-info text-white"
+                               th:href="@{'/admin/usuarios/' + ${u.id}}">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+
+                            <button class="btn btn-sm btn-warning"
+                                    data-bs-toggle="modal"
+                                    th:data-bs-target="'#modalRol' + ${u.id}">
+                                <i class="bi bi-pencil"></i> Rol
+                            </button>
+
+                        </td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODALES PARA CAMBIAR ROL -->
+<div th:each="u : ${usuarios}">
+
+    <div class="modal fade"
+         th:id="'modalRol' + ${u.id}"
+         tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">
+                        Cambiar Rol de <span th:text="${u.nombre}"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form th:action="@{'/admin/usuarios/' + ${u.id} + '/cambiar-rol'}"
+                      method="post">
+
+                    <div class="modal-body">
+
+                        <label class="form-label fw-semibold">Nuevo rol</label>
+
+                        <select class="form-select" name="nuevoRol" required>
+                            <option value="ADMIN" th:selected="${u.rol.name() == 'ADMIN'}">ADMIN</option>
+                            <option value="USER" th:selected="${u.rol.name() == 'USER'}">USER</option>
+                        </select>
+
+                        <div class="mt-3 alert alert-warning small" role="alert"
+                             th:if="${u.rol.name() == 'ADMIN'}">
+                            ⚠ Si este usuario es el último ADMIN, no podrás cambiarlo a USER.
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-primary" type="submit">Guardar cambios</button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

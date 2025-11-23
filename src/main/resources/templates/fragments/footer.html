@@ -1,0 +1,35 @@
+<footer class="bg-dark text-light py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <h5 class="text-white">SOLEA</h5>
+                <p class="text-muted">Tu tienda de moda online. Calidad, estilo y confianza.</p>
+            </div>
+
+            <div class="col-md-4">
+                <h6 class="text-white">Navegación</h6>
+                <ul class="list-unstyled">
+                    <li><a class="text-muted text-decoration-none" th:href="@{/}">Inicio</a></li>
+                    <li><a class="text-muted text-decoration-none" th:href="@{/catalogo}">Catálogo</a></li>
+                    <li><a class="text-muted text-decoration-none" th:href="@{/nosotros}">Nosotros</a></li>
+                    <li><a class="text-muted text-decoration-none" th:href="@{/contacto}">Contacto</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-4">
+                <h6 class="text-white">Legal</h6>
+                <ul class="list-unstyled">
+                    <li><a class="text-muted text-decoration-none" th:href="@{/ayuda}">Ayuda</a></li>
+                    <li><a class="text-muted text-decoration-none" th:href="@{/politicas}">Políticas</a></li>
+                    <li><a class="text-muted text-decoration-none" th:href="@{/terminos}">Términos y Condiciones</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="text-center mt-4 text-muted small">
+            © [[${#dates.format(new java.util.Date(), 'yyyy')}]] SOLEA - Todos los derechos reservados.
+        </div>
+    </div>
+</footer>

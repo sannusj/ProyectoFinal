@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Solea - Bienvenido</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<th:block th:replace="~{fragments/navbar :: navbar}"></th:block>
+
+
+<!-- ===================== BANNER DE BIENVENIDA ===================== -->
+<section class="bg-dark text-white text-center py-5">
+    <div class="container">
+        <h1 class="fw-bold">
+            ¡Hola <span th:text="${usuario != null ? usuario.nombre : 'Usuario'}">Usuario</span>!
+        </h1>
+        <p class="lead mt-2">Nos alegra tenerte de vuelta en Solea.</p>
+        <a th:href="@{/catalogo}" class="btn btn-light btn-lg mt-3 px-4 py-2 fw-bold">
+            Ver catálogo
+        </a>
+    </div>
+</section>
+
+
+<!-- ===================== SECCIÓN DE PERFIL RÁPIDO ===================== -->
+<div class="container my-5" th:if="${usuario != null}">
+    <h2 class="fw-bold mb-4">Tu información</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body d-flex align-items-center">
+
+            <!-- Avatar -->
+            <img th:src="@{/perfil/avatar}"
+                 alt="Avatar"
+                 class="rounded-circle me-4"
+                 style="width: 80px; height: 80px; object-fit: cover;">
+
+            <!-- Info -->
+            <div class="flex-grow-1">
+                <h5 class="fw-bold mb-1" th:text="${usuario.nombre}">Nombre del usuario</h5>
+                <p class="mb-0 text-muted">
+                    <strong>Email:</strong> <span th:text="${usuario.email}">email</span>
+                </p>
+                <p class="mb-0 text-muted">
+                    <strong>País:</strong> <span th:text="${usuario.pais}">Colombia</span>
+                </p>
+            </div>
+
+            <!-- Botón -->
+            <a th:href="@{/perfil}" class="btn btn-dark ms-3">Administrar perfil</a>
+        </div>
+    </div>
+</div>
+
+
+<!-- ===================== RECOMENDACIONES (usar 'destacados' si existe) ===================== -->
+<div class="container my-5" th:if="${destacados != null}">
+    <h2 class="fw-bold text-center mb-4">Recomendado para ti</h2>
+
+    <div class="row g-4">
+
+        <div class="col-md-4" th:each="p : ${destacados}">
+            <div class="card shadow-sm">
+                <img th:src="@{'/imagenes/' + ${p.id}}" class="card-img-top" style="height:240px; object-fit:cover;">
+
+                <div class="card-body">
+                    <h5 class="fw-bold" th:text="${p.nombre}">Nombre prenda</h5>
+                    <p class="text-muted" th:text="${p.descripcion}">Descripción</p>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold" th:text="'$ ' + ${p.precio}">Precio</span>
+
+                        <a th:href="@{'/catalogo/detalle/' + ${p.id}}"
+                           class="btn btn-dark btn-sm">
+                            Ver producto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Placeholder si no hay recomendados -->
+        <div class="text-center text-muted" th:if="${#lists.isEmpty(destacados)}">
+            No hay recomendaciones por ahora. Explora el catálogo para obtener recomendaciones personalizadas.
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ===================== SECCIÓN CTA ===================== -->
+<section class="py-5 bg-dark text-white text-center">
+    <h2 class="fw-bold">¿Listo para seguir comprando?</h2>
+    <p class="mt-2">Tu carrito siempre está disponible para ti.</p>
+    <a th:href="@{/carrito}" class="btn btn-light px-4 py-2 mt-2">Ir al carrito</a>
+</section>
+
+
+<!-- FOOTER -->
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

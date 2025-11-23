@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Prendas | Admin</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+
+<body>
+
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="bi bi-bag"></i> Gestión de Prendas</h2>
+
+        <a href="/admin/prendas/nueva" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nueva Prenda
+        </a>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Talla</th>
+                        <th>Stock</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="p : ${prendas}">
+                        <td>
+                            <!-- Servir imagen igual que en catalogo: /imagenes/{id} -->
+                            <img th:src="@{'/imagenes/' + ${p.id}}"
+                                 alt="img"
+                                 class="rounded"
+                                 style="width: 60px; height: 60px; object-fit: cover;">
+                        </td>
+
+                        <td th:text="${p.nombre}"></td>
+
+                        <td>$<span th:text="${p.precio}"></span></td>
+
+                        <td th:text="${p.talla}"></td>
+
+                        <td th:text="${p.stock}"></td>
+
+                        <td th:text="${p.categoria != null ? p.categoria.nombre : 'Sin categoría'}"></td>
+
+                        <td>
+                            <!-- Editar: usar /admin/prendas/{id}/editar -->
+                            <a th:href="@{'/admin/prendas/' + ${p.id} + '/editar'}"
+                               class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <!-- Eliminar: usar formulario POST hacia /admin/prendas/{id}/eliminar -->
+                            <form th:action="@{'/admin/prendas/' + ${p.id} + '/eliminar'}" method="post" style="display:inline-block; margin-left:6px;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar esta prenda?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

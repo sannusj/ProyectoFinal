@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Solea - Inicio</title>
+
+    <!-- BOOTSTRAP -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<th:block th:replace="~{fragments/navbar :: navbar}"></th:block>
+
+<!-- ================= HERO ================= -->
+<section class="d-flex align-items-center" style="min-height:70vh; background-image:url('https://images.unsplash.com/photo-1521335629791-ce4aec67dd47?auto=format&fit=crop&w=1600&q=80'); background-size:cover; background-position:center;">
+    <div class="container text-center text-white" style="background: rgba(0,0,0,0.45); padding: 60px 20px;">
+        <h1 class="display-4 fw-bold">Moda que inspira, estilo que destaca</h1>
+        <p class="lead mt-3">Encuentra las prendas perfectas para ti en nuestra colección exclusiva.</p>
+        <a th:href="@{/catalogo}" class="btn btn-light btn-lg px-4 py-2 fw-bold mt-3">Ver catálogo</a>
+    </div>
+</section>
+
+
+<!-- ================= CATEGORÍAS ================= -->
+<div class="container my-5">
+
+    <h2 class="text-center fw-bold mb-4">Explora nuestras categorías</h2>
+
+    <div class="row g-4">
+
+        <!-- Hombre -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80"
+                     class="card-img-top" style="height:240px; object-fit:cover;">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold">Hombre</h5>
+                    <a th:href="@{/catalogo?cat=hombre}" class="btn btn-dark mt-2">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mujer -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <img src="https://images.unsplash.com/photo-1542060749-10c28b62716f?auto=format&fit=crop&w=800&q=80"
+                     class="card-img-top" style="height:240px; object-fit:cover;">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold">Mujer</h5>
+                    <a th:href="@{/catalogo?cat=mujer}" class="btn btn-dark mt-2">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accesorios -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <img src="https://images.unsplash.com/photo-1503341733017-1901578f9b66?auto=format&fit=crop&w=800&q=80"
+                     class="card-img-top" style="height:240px; object-fit:cover;">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold">Accesorios</h5>
+                    <a th:href="@{/catalogo?cat=accesorios}" class="btn btn-dark mt-2">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ================= CTA ================= -->
+<section class="py-5 bg-dark text-white text-center">
+    <h2 class="fw-bold">Únete a nuestra comunidad</h2>
+    <p class="mt-2">Recibe ofertas exclusivas y novedades.</p>
+    <a th:href="@{/registro}" class="btn btn-light mt-2 px-4 py-2">Crear cuenta</a>
+</section>
+
+
+<!-- FOOTER -->
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+<!-- BOOTSTRAP JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
