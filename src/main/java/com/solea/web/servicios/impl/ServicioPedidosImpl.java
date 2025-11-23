@@ -55,7 +55,17 @@ public class ServicioPedidosImpl implements com.solea.web.servicios.ServicioPedi
 
     @Override
     public Pedido obtenerPedidoPorId(int idPedido) {
-        return pedidoRepo.findById(idPedido).orElse(null);
+        Pedido pedido = pedidoRepo.findByIdWithProductosAndPrendas(idPedido).orElse(null);
+        if (pedido != null && pedido.getProductos() != null) {
+            // Forzar inicialización de la colección y de las prendas asociadas
+            pedido.getProductos().forEach(pp -> {
+                // acceder a campos para inicializar proxies
+                if (pp.getPrenda() != null) {
+                    pp.getPrenda().getNombre();
+                }
+            });
+        }
+        return pedido;
     }
 
     @Override

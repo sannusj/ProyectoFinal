@@ -103,7 +103,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="prod : ${pedido.productos}">
+                    <tr th:each="prod : ${pedido.productos}" th:if="${pedido.productos} != null">
                         <td th:text="${prod.nombrePrenda}"></td>
                         <td th:text="${prod.cantidad}"></td>
                         <td>$<span th:text="${prod.precioUnitario}"></span></td>

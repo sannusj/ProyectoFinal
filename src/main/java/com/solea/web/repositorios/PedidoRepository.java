@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PedidoRepository extends JpaRepository<Pedido, Integer> {
 
@@ -21,4 +22,10 @@ public interface PedidoRepository extends JpaRepository<Pedido, Integer> {
     );
 
     Page<Pedido> findAllByOrderByIdDesc(Pageable pageable);
+
+    @Query("select p from Pedido p " +
+           "left join fetch p.productos prod " +
+           "left join fetch prod.prenda pr " +
+           "where p.id = :id")
+    Optional<Pedido> findByIdWithProductosAndPrendas(@Param("id") Integer id);
 }

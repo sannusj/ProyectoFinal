@@ -76,4 +76,10 @@ public class ProductoPedido {
     public void setSubtotal(Double subtotal) {
         this.subtotal = subtotal;
     }
+
+    // Helper para plantillas: devolver el nombre de la prenda
+    public String getNombrePrenda() {
+        if (this.prenda == null) return "";
+        return this.prenda.getNombre();
+    }
 }
