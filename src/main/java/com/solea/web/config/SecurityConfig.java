@@ -1,7 +1,13 @@
 package com.solea.web.config;
 
+import com.solea.web.security.CustomOAuth2UserService;
+import com.solea.web.security.CustomOidcUserService;
+import com.solea.web.security.OAuth2LoginSuccessHandler;
+import jakarta.servlet.ServletException;
+import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,9 +20,15 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
+    private final CustomOidcUserService customOidcUserService;
 
-    public SecurityConfig(UserDetailsService userDetailsService) {
+    public SecurityConfig(UserDetailsService userDetailsService, @Lazy CustomOAuth2UserService customOAuth2UserService, @Lazy CustomOidcUserService customOidcUserService, @Lazy OAuth2LoginSuccessHandler oauth2LoginSuccessHandler) {
         this.userDetailsService = userDetailsService;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.customOidcUserService = customOidcUserService;
+        this.oauth2LoginSuccessHandler = oauth2LoginSuccessHandler;
     }
 
     // BCrypt para cifrado
@@ -45,7 +57,8 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/carrito/**", "/pedido/**").hasRole("USER")
                         .requestMatchers("/perfil/**").hasAnyRole("USER","ADMIN")
-                        .requestMatchers("/auth/**", "/", "/css/**", "/img/**").permitAll()
+                        // Permitir recursos estáticos y endpoints públicos
+                        .requestMatchers("/auth/**", "/", "/css/**", "/img/**", "/imagen/**", "/images/**", "/accesos/**", "/uploads/**", "/fonts/**", "/js/**", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -55,11 +68,25 @@ public class SecurityConfig {
                         .failureUrl("/auth/login?error=true")
                         .permitAll()
                 )
+                .oauth2Login(oauth -> oauth
+                        .loginPage("/auth/login")
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService).oidcUserService(customOidcUserService))
+                         .successHandler(oauth2LoginSuccessHandler)
+                )
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessUrl("/auth/login?logout=true")
                         .permitAll()
-                );
+                )
+                // Manejo de AccessDenied (403) -> reenviar a /error/403 para que Thymeleaf muestre error/403.html
+                .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(403);
+                    try {
+                        request.getRequestDispatcher("/error/403").forward(request, response);
+                    } catch (ServletException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }));
 
         return http.build();
     }

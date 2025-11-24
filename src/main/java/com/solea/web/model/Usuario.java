@@ -16,7 +16,7 @@ public class Usuario {
     private String email;
 
     // CAMBIADO: antes era "password"
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String pass;
 
     private String tel;
@@ -29,6 +29,17 @@ public class Usuario {
 
     @Lob
     private byte[] avatar;
+
+    // Proveedor de autenticación (LOCAL, GOOGLE, ...)
+    public enum Provider { LOCAL, GOOGLE }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Provider provider = Provider.LOCAL;
+
+    // id del usuario en el proveedor OAuth (p.ej. sub de Google)
+    @Column(name = "oauth_id")
+    private String oauthId;
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
@@ -53,4 +64,10 @@ public class Usuario {
 
     public byte[] getAvatar() { return avatar; }
     public void setAvatar(byte[] avatar) { this.avatar = avatar; }
+
+    public Provider getProvider() { return provider; }
+    public void setProvider(Provider provider) { this.provider = provider; }
+
+    public String getOauthId() { return oauthId; }
+    public void setOauthId(String oauthId) { this.oauthId = oauthId; }
 }

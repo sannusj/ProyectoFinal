@@ -1,0 +1,190 @@
+/* Solea theme - colores y tipografía
+   Archivo generado: src/main/resources/static/css/solea-theme.css
+   Paleta proporcionada por el usuario.
+*/
+
+:root {
+  /* Colores principales */
+  --giallo-limone: #FFA800; /* Color principal (acentos, botones) */
+  --oro-siciliano: #E68D00; /* Hover / variación cálida */
+  --blu-mediterraneo: #0F106D; /* Logo y títulos */
+  --blu-notte: #2E28DB; /* Links y detalles vivos */
+  --verde-foglia: #11601E; /* Contraste secundario */
+  --crema-chiaro: #F8F4E9; /* Fondo claro */
+  --marmo-bianco: #FFFFFF; /* Fondo limpio / textos sobre azul */
+  --terracotta-chiara: #C68A55; /* Acentos cálidos */
+  --blu-ceramica: #1C257E; /* Azul intermedio */
+
+  /* Neutros */
+  --text-dark: #1b1b1b;
+  --muted: #6c6c6c;
+  --border: rgba(15,16,109,0.08);
+
+  /* Espaciados */
+  --container-max-width: 1200px;
+  --radius: 8px;
+}
+
+/* Fuentes: intenta cargar desde /static/fonts. Asegúrate que existan los archivos .woff2/.woff */
+@font-face {
+  font-family: 'Solea-Display';
+  src: url('/fonts/solea-display.woff2') format('woff2'),
+       url('/fonts/solea-display.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Solea-Sans';
+  src: url('/fonts/solea-sans.woff2') format('woff2'),
+       url('/fonts/solea-sans.woff') format('woff');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tipografías globales */
+html, body {
+  height: 100%;
+  background-color: var(--crema-chiaro);
+  color: var(--text-dark);
+  font-family: 'Solea-Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Contenedores */
+.container {
+  max-width: var(--container-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Encabezados */
+h1, h2, h3, h4, h5 {
+  font-family: 'Solea-Display', 'Solea-Sans', serif;
+  color: var(--blu-mediterraneo);
+  margin-top: 0;
+  margin-bottom: .5rem;
+}
+
+h1 { font-size: 2.4rem; letter-spacing: -0.5px; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.4rem; }
+
+/* Links */
+a {
+  color: var(--blu-notte);
+  text-decoration: none;
+}
+a:hover { color: var(--blu-ceramica); text-decoration: underline; }
+
+/* Buttons */
+.btn-primary, .btn--primary {
+  background: linear-gradient(180deg, var(--giallo-limone), var(--oro-siciliano));
+  border: none;
+  color: var(--marmo-bianco);
+  padding: .65rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(230,141,0,0.12);
+}
+.btn-primary:hover, .btn--primary:hover {
+  background: linear-gradient(180deg, var(--oro-siciliano), var(--oro-siciliano));
+  transform: translateY(-1px);
+}
+
+/* Outline / secondary */
+.btn-outline-primary, .btn--outline {
+  background: transparent;
+  border: 2px solid var(--giallo-limone);
+  color: var(--blu-mediterraneo);
+  padding: .5rem .85rem;
+  border-radius: var(--radius);
+}
+.btn-outline-primary:hover { background: rgba(255,168,0,0.06); }
+
+/* Cards */
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(248,244,233,0.5));
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+}
+.card .card-body { padding: 1rem; }
+.card .card-title { color: var(--blu-mediterraneo); }
+
+/* Navbar */
+.navbar {
+  background: linear-gradient(90deg, var(--blu-mediterraneo), var(--blu-ceramica));
+}
+.navbar .navbar-brand { font-weight: 800; color: var(--giallo-limone) !important; }
+.navbar .nav-link { color: rgba(255,255,255,0.9); }
+.navbar .nav-link:hover { color: var(--giallo-limone); }
+
+/* Forms */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid rgba(15,16,109,0.08);
+}
+.form-control:focus { box-shadow: 0 0 0 4px rgba(46,40,219,0.06); border-color: var(--blu-notte); }
+
+/* Footer */
+.footer {
+  background: linear-gradient(180deg, var(--blu-mediterraneo), rgba(12,13,85,0.95));
+  color: var(--marmo-bianco);
+  padding: 2.5rem 0;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.footer-title {
+  color: var(--marmo-bianco);
+  font-weight: 700;
+  margin-bottom: .5rem;
+  letter-spacing: 0.4px;
+}
+.footer-desc {
+  color: rgba(255,255,255,0.85);
+  margin-bottom: .25rem;
+  font-size: .95rem;
+}
+.footer-links { padding-left: 0; }
+.footer-link {
+  color: rgba(255,255,255,0.85);
+  display: inline-block;
+  padding: .15rem 0;
+}
+.footer-link:hover, .footer-link:focus {
+  color: var(--giallo-limone);
+  text-decoration: underline;
+}
+.footer .copyright {
+  color: rgba(255,255,255,0.75);
+  border-top: 1px solid rgba(255,255,255,0.03);
+  padding-top: 1rem;
+  margin-top: 1.25rem;
+}
+
+/* Utilities */
+.text-accent { color: var(--giallo-limone); }
+.bg-accent { background: var(--giallo-limone); color: var(--marmo-bianco); }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.4rem; }
+  .footer { padding: 2rem 0; }
+  .footer .col-md-4 { margin-bottom: .75rem; }
+  .footer-desc { font-size: .95rem; }
+  .footer-link { font-size: .98rem; }
+}
+
+/* Fallback for CSS functions used (darken) — provide simple hover if not supported */
+.btn-primary:hover { background: var(--oro-siciliano); }
+
+/* Small helpers */
+.muted { color: var(--muted); }
+.shadow-soft { box-shadow: 0 8px 24px rgba(15,16,109,0.08); }
+
+/* Accessibility: focus outline */
+:focus { outline: 3px solid rgba(15,16,109,0.12); outline-offset: 2px; }

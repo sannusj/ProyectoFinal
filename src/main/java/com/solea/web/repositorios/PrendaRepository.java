@@ -19,4 +19,7 @@ public interface PrendaRepository extends JpaRepository<Prenda, Integer> {
 
     @Query("select p from Prenda p left join fetch p.categoria where p.id = :id")
     java.util.Optional<Prenda> findByIdWithCategoria(@org.springframework.data.repository.query.Param("id") Integer id);
+
+    @Query("select p from Prenda p left join fetch p.categoria c where lower(c.nombre) = lower(:categoria)")
+    List<Prenda> findByCategoriaNombreIgnoreCaseFetchCategoria(@Param("categoria") String categoria);
 }

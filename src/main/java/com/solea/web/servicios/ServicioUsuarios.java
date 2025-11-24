@@ -26,4 +26,7 @@ public interface ServicioUsuarios {
     void cambiarRolUsuario(Integer id, Rol nuevoRol);
 
     boolean esUltimoAdmin(Integer idUsuario);
+
+    // Procesar login OAuth: crear o actualizar usuario según atributos del proveedor
+    com.solea.web.model.Usuario processOAuthPostLogin(String providerName, java.util.Map<String, Object> attributes);
 }

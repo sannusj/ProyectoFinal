@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Controller
 @RequestMapping("/perfil")
@@ -16,10 +17,12 @@ public class PerfilController {
 
     private final ServicioUsuarios servicioUsuarios;
     private final ServicioPedidos servicioPedidos;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public PerfilController(ServicioUsuarios servicioUsuarios, ServicioPedidos servicioPedidos) {
+    public PerfilController(ServicioUsuarios servicioUsuarios, ServicioPedidos servicioPedidos, BCryptPasswordEncoder passwordEncoder) {
         this.servicioUsuarios = servicioUsuarios;
         this.servicioPedidos = servicioPedidos;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -90,6 +93,12 @@ public class PerfilController {
         Usuario u = usuarioActual();
         if (u == null) return "redirect:/auth/login";
 
+        // Si el usuario viene de un proveedor externo (OAuth), no permitir cambiar contraseña
+        if (u.getProvider() != Usuario.Provider.LOCAL) {
+            model.addAttribute("error", "No es posible cambiar la contraseña para cuentas creadas con proveedor externo.");
+            return "redirect:/perfil";
+        }
+
         model.addAttribute("usuario", u);
         return "perfil/cambiar-pass";
     }
@@ -103,23 +112,32 @@ public class PerfilController {
         Usuario u = usuarioActual();
         if (u == null) return "redirect:/auth/login";
 
-        // Validar contraseña actual
-        if (!u.getPass().equals(actual)) {
+        // Si el usuario viene de OAuth no permitir cambio
+        if (u.getProvider() != Usuario.Provider.LOCAL) {
+            model.addAttribute("error", "No es posible cambiar la contraseña para cuentas creadas con proveedor externo.");
+            return "redirect:/perfil";
+        }
+
+        // Validar contraseña actual usando BCrypt
+        if (!passwordEncoder.matches(actual, u.getPass())) {
             model.addAttribute("error", "La contraseña actual es incorrecta");
+            model.addAttribute("usuario", u);
             return "perfil/cambiar-pass";
         }
 
         // Validar que ambas nuevas coincidan
         if (!nueva.equals(repetir)) {
             model.addAttribute("error", "Las nuevas contraseñas no coinciden");
+            model.addAttribute("usuario", u);
             return "perfil/cambiar-pass";
         }
 
-        // Guardar nueva contraseña
+        // Guardar nueva contraseña (servicio se encarga de encriptar si es necesario)
         u.setPass(nueva);
         servicioUsuarios.guardarCambiosUsuario(u);
 
         model.addAttribute("exito", "Contraseña actualizada correctamente");
+        model.addAttribute("usuario", u);
         return "perfil/cambiar-pass";
     }
 

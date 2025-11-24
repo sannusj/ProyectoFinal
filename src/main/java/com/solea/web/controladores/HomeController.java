@@ -79,10 +79,30 @@ public class HomeController {
     // ---------------------------------------------------------
 
     @GetMapping("/catalogo")
-    public String catalogo(Model model) {
+    public String catalogo(Model model, @org.springframework.web.bind.annotation.RequestParam(name = "cat", required = false) String cat, @org.springframework.web.bind.annotation.RequestParam(name = "nombre", required = false) String nombre) {
         try {
-            model.addAttribute("productos", servicioPrendas.obtenerTodas());
+            String catTrim = (cat != null && !cat.trim().isEmpty()) ? cat.trim() : null;
+            String nombreTrim = (nombre != null && !nombre.trim().isEmpty()) ? nombre.trim() : null;
+
+            List<Prenda> resultados;
+
+            if (nombreTrim != null && catTrim != null) {
+                // Buscar por nombre y luego filtrar por categoría (ambos filtros combinados)
+                resultados = servicioPrendas.buscarPorNombre(nombreTrim).stream()
+                        .filter(p -> p.getCategoria() != null && catTrim.equalsIgnoreCase(p.getCategoria().getNombre()))
+                        .toList();
+            } else if (nombreTrim != null) {
+                resultados = servicioPrendas.buscarPorNombre(nombreTrim);
+            } else if (catTrim != null) {
+                resultados = servicioPrendas.buscarPorCategoria(catTrim);
+            } else {
+                resultados = servicioPrendas.obtenerTodas();
+            }
+
+            model.addAttribute("productos", resultados);
             model.addAttribute("usuario", usuarioActual());
+            model.addAttribute("categoriaSeleccionada", catTrim);
+            model.addAttribute("nombreBusqueda", nombreTrim);
             return "home/catalogo";
         } catch (Exception ex) {
             model.addAttribute("error", "Error al cargar catálogo: " + ex.getMessage());
@@ -124,6 +144,7 @@ public class HomeController {
         );
 
         model.addAttribute("prenda", pv);
+        model.addAttribute("usuario", usuarioActual());
 
         // relacionados: mapear a la misma vista ligera
         List<PrendaView> relacionados = servicioPrendas.obtenerTodas().stream()

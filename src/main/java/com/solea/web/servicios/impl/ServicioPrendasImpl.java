@@ -112,4 +112,12 @@ public class ServicioPrendasImpl implements ServicioPrendas {
         }
         return prendaRepository.findByNombreContainingIgnoreCaseFetchCategoria(nombre);
     }
+
+    @Override
+    public List<Prenda> buscarPorCategoria(String categoria) {
+        if (categoria == null || categoria.trim().isEmpty()) {
+            return prendaRepository.findAllWithCategoria();
+        }
+        return prendaRepository.findByCategoriaNombreIgnoreCaseFetchCategoria(categoria.trim());
+    }
 }

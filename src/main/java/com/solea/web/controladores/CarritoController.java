@@ -4,6 +4,7 @@ import com.solea.web.dto.ProductoCarritoDto;
 import com.solea.web.model.Usuario;
 import com.solea.web.servicios.ServicioCarrito;
 import com.solea.web.servicios.ServicioUsuarios;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -60,6 +61,10 @@ public class CarritoController {
         Usuario usuario = getUsuarioActual();
         if (usuario == null) return "redirect:/auth/login";
 
+        if (usuario.getRol() == com.solea.web.model.Rol.ADMIN) {
+            throw new AccessDeniedException("Los administradores no pueden usar el carrito");
+        }
+
         // Llamada al método correcto del servicio
         servicioCarrito.agregarProductoAlCarrito(usuario.getId(), prendaId, cantidad);
 
@@ -75,6 +80,10 @@ public class CarritoController {
         Usuario usuario = getUsuarioActual();
         if (usuario == null) return "redirect:/auth/login";
 
+        if (usuario.getRol() == com.solea.web.model.Rol.ADMIN) {
+            throw new AccessDeniedException("Los administradores no pueden usar el carrito");
+        }
+
         servicioCarrito.actualizarCantidad(usuario.getId(), prendaId, cantidad);
 
         return "redirect:/carrito";
@@ -86,6 +95,10 @@ public class CarritoController {
 
         Usuario usuario = getUsuarioActual();
         if (usuario == null) return "redirect:/auth/login";
+
+        if (usuario.getRol() == com.solea.web.model.Rol.ADMIN) {
+            throw new AccessDeniedException("Los administradores no pueden usar el carrito");
+        }
 
         servicioCarrito.eliminarProductoDelCarrito(usuario.getId(), prendaId);
 
@@ -99,6 +112,10 @@ public class CarritoController {
         Usuario usuario = getUsuarioActual();
         if (usuario == null) return "redirect:/auth/login";
 
+        if (usuario.getRol() == com.solea.web.model.Rol.ADMIN) {
+            throw new AccessDeniedException("Los administradores no pueden usar el carrito");
+        }
+
         servicioCarrito.vaciarCarrito(usuario.getId());
 
         return "redirect:/carrito";
@@ -109,6 +126,10 @@ public class CarritoController {
     public String irAlCheckout() {
         Usuario usuario = getUsuarioActual();
         if (usuario == null) return "redirect:/auth/login";
+
+        if (usuario.getRol() == com.solea.web.model.Rol.ADMIN) {
+            throw new AccessDeniedException("Los administradores no pueden usar el carrito");
+        }
         return "redirect:/pedido/paso1";
     }
 }

@@ -161,4 +161,71 @@ public class ServicioUsuarioImpl implements ServicioUsuarios {
 
         return false;
     }
+
+    // ================================
+    // PROCESAR LOGIN OAUTH
+    // ================================
+    @Override
+    public Usuario processOAuthPostLogin(String providerName, java.util.Map<String, Object> attributes) {
+        org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ServicioUsuarioImpl.class);
+        log.info("processOAuthPostLogin provider={} attributesKeys={}", providerName, attributes != null ? attributes.keySet() : null);
+         // Actualmente soportamos Google
+         Usuario.Provider provider = Usuario.Provider.valueOf(providerName.toUpperCase());
+
+         // Extraer oauthId: primero intentamos la clave normalizada que puso el servicio OAuth
+        String oauthId = null;
+        if (attributes.containsKey("oauth_id_normalized")) {
+            oauthId = String.valueOf(attributes.get("oauth_id_normalized"));
+        } else if (attributes.containsKey("sub")) {
+            oauthId = String.valueOf(attributes.get("sub"));
+        } else if (attributes.containsKey("id")) {
+            oauthId = String.valueOf(attributes.get("id"));
+        }
+
+        String email = attributes.containsKey("email") ? String.valueOf(attributes.get("email")) : null;
+        String name = attributes.containsKey("name") ? String.valueOf(attributes.get("name")) : null;
+
+        // Si ya existe usuario por provider+oauthId -> actualizar
+        if (oauthId != null) {
+            java.util.Optional<Usuario> opt = usuarioRepository.findByProviderAndOauthId(provider, oauthId);
+            if (opt.isPresent()) {
+                Usuario u = opt.get();
+                if (name != null && (u.getNombre() == null || u.getNombre().isBlank())) u.setNombre(name);
+                // podríamos actualizar avatar/otros campos aquí
+                return usuarioRepository.save(u);
+            }
+        }
+
+        // Si no existe por oauthId, buscar por email
+        if (email != null) {
+            java.util.Optional<Usuario> byEmail = usuarioRepository.findByEmail(email);
+            if (byEmail.isPresent()) {
+                Usuario existing = byEmail.get();
+                // Si el usuario ya es de este provider, ligar
+                if (existing.getProvider() == provider || existing.getProvider() == Usuario.Provider.LOCAL) {
+                    existing.setProvider(provider);
+                    if (oauthId != null) existing.setOauthId(oauthId);
+                    if (existing.getRol() == null) existing.setRol(Rol.USER);
+                    if (existing.getNombre() == null || existing.getNombre().isBlank()) existing.setNombre(name);
+                    // Asegurar que la columna pass no sea nula (crear una contraseña aleatoria cifrada)
+                    if (existing.getPass() == null || existing.getPass().isBlank()) {
+                        existing.setPass(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+                    }
+                    return usuarioRepository.save(existing);
+                }
+            }
+        }
+
+        // Si no existe, crear nuevo usuario
+        Usuario nuevo = new Usuario();
+        nuevo.setEmail(email);
+        nuevo.setNombre(name);
+        nuevo.setProvider(provider);
+        nuevo.setOauthId(oauthId);
+        nuevo.setRol(Rol.USER);
+        // Establecer contraseña aleatoria cifrada para cumplir restricciones DB y evitar login por contraseña
+        nuevo.setPass(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+
+        return usuarioRepository.save(nuevo);
+    }
 }

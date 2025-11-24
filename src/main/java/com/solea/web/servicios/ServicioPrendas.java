@@ -19,4 +19,5 @@ public interface ServicioPrendas {
 
     // Catálogo
     List<Prenda> buscarPorNombre(String nombre);
+    List<Prenda> buscarPorCategoria(String categoria);
 }

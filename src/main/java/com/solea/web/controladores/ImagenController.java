@@ -39,7 +39,7 @@ public class ImagenController {
             if (p.getImagePath() != null && !p.getImagePath().isBlank()) {
                 Path ruta = Paths.get(p.getImagePath());
 
-                // Si la ruta es relativa (no comienza con drive o /), relativizamos respecto al directorio del proyecto
+                // Si la ruta es relativa, relativizar respecto al directorio del proyecto
                 if (!ruta.isAbsolute()) {
                     ruta = Paths.get(System.getProperty("user.dir")).resolve(p.getImagePath());
                 }

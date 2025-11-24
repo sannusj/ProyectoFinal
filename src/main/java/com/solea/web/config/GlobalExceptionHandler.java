@@ -12,6 +12,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Collections;
 
+// Importaciones añadidas
+import org.springframework.security.access.AccessDeniedException;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -63,6 +66,15 @@ public class GlobalExceptionHandler {
 
         ModelAndView mav = new ModelAndView("error/500");
         mav.addObject("message", "Se produjo un error en el servidor. Intenta nuevamente más tarde.");
+        return mav;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ModelAndView handleAccessDenied(AccessDeniedException ex) {
+        logger.warn("Access denied: {}", ex.getMessage());
+        ModelAndView mav = new ModelAndView("error/403");
+        mav.addObject("message", ex.getMessage());
+        mav.addObject("status", 403);
         return mav;
     }
 }
