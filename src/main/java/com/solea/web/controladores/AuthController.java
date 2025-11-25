@@ -2,6 +2,15 @@ package com.solea.web.controladores;
 
 import com.solea.web.model.Usuario;
 import com.solea.web.servicios.ServicioUsuarios;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -13,6 +22,11 @@ import org.springframework.security.web.csrf.CsrfToken;
 
 @Controller
 @RequestMapping("/auth")
+@Tag(
+    name = "Autenticación", 
+    description = "API de autenticación que gestiona el login, registro y autenticación de usuarios en el sistema. " +
+                  "Incluye formularios de registro con validación, manejo de sesiones y redirección según roles."
+)
 public class AuthController {
 
     private final ServicioUsuarios servicioUsuarios;
@@ -25,6 +39,16 @@ public class AuthController {
     // ===========================
     // VISTA LOGIN
     // ===========================
+    @Operation(
+            summary = "Página de login",
+            description = "Muestra el formulario de inicio de sesión del sistema. " +
+                         "Los usuarios pueden autenticarse con su email y contraseña. " +
+                         "Después del login exitoso, son redirigidos según su rol (admin o usuario normal)."
+    )
+    @ApiResponse(
+            responseCode = "200", 
+            description = "Página de login renderizada exitosamente con formulario de autenticación"
+    )
     @GetMapping("/login")
     public String login() {
         return "login"; // Thymeleaf buscará login.html
@@ -33,6 +57,16 @@ public class AuthController {
     // ===========================
     // VISTA REGISTRO
     // ===========================
+    @Operation(
+            summary = "Página de registro",
+            description = "Muestra el formulario de registro para nuevos usuarios. " +
+                         "El formulario incluye campos para nombre, email, contraseña, teléfono y país. " +
+                         "Incluye protección CSRF para seguridad."
+    )
+    @ApiResponse(
+            responseCode = "200", 
+            description = "Página de registro renderizada con formulario vacío y token CSRF"
+    )
     @GetMapping("/registro")
     public String registro(Model model, HttpServletRequest request) {
         model.addAttribute("usuario", new Usuario());
@@ -47,8 +81,45 @@ public class AuthController {
     // ===========================
     // PROCESAR REGISTRO
     // ===========================
+    @Operation(
+            summary = "Procesar registro de usuario",
+            description = "Procesa el formulario de registro y crea un nuevo usuario en el sistema. " +
+                         "Valida que el email no esté duplicado, encripta la contraseña con BCrypt y " +
+                         "asigna el rol USER por defecto. Si hay errores de validación, muestra mensajes específicos.",
+            requestBody = @RequestBody(
+                    description = "Datos del nuevo usuario a registrar. Completa todos los campos del formulario.",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/x-www-form-urlencoded",
+                            schema = @Schema(implementation = Usuario.class),
+                            examples = @ExampleObject(
+                                    name = "Ejemplo de registro",
+                                    summary = "Usuario de ejemplo",
+                                    description = "Datos de ejemplo para registrar un nuevo usuario en el sistema",
+                                    value = "nombre=Juan Pérez García&email=juan.perez@ejemplo.com&pass=MiPassword123!&tel=+57 300 123 4567&pais=Colombia"
+                            )
+                    )
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "302", 
+                    description = "Usuario registrado exitosamente - redirige a /auth/login?registrado=true"
+            ),
+            @ApiResponse(
+                    responseCode = "200", 
+                    description = "Error en validación - retorna formulario con mensaje de error"
+            ),
+            @ApiResponse(
+                    responseCode = "400", 
+                    description = "Datos inválidos, email duplicado o campos obligatorios vacíos"
+            )
+    })
     @PostMapping("/registro")
-    public String procesarRegistro(@ModelAttribute Usuario usuario, Model model, HttpServletRequest request) {
+    public String procesarRegistro(
+            @Parameter(hidden = true) @ModelAttribute Usuario usuario, 
+            @Parameter(hidden = true) Model model, 
+            @Parameter(hidden = true) HttpServletRequest request) {
 
         // Si el binding falló, reconstruimos a partir de parámetros (fallback)
         if (usuario == null) {

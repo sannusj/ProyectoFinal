@@ -59,6 +59,8 @@ public class SecurityConfig {
                         .requestMatchers("/perfil/**").hasAnyRole("USER","ADMIN")
                         // Permitir recursos estáticos y endpoints públicos
                         .requestMatchers("/auth/**", "/", "/css/**", "/img/**", "/imagen/**", "/images/**", "/accesos/**", "/uploads/**", "/fonts/**", "/js/**", "/favicon.ico").permitAll()
+                        // Permitir acceso a Swagger UI y documentación OpenAPI
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

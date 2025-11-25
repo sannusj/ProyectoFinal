@@ -1,26 +1,33 @@
 package com.solea.web.model;
 
 import jakarta.persistence.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "usuarios")
+@Schema(description = "Entidad de usuario del sistema")
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "ID único del usuario", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Integer id;
 
+    @Schema(description = "Nombre completo del usuario", example = "Juan Pérez García", required = true)
     private String nombre;
 
     @Column(unique = true, nullable = false)
+    @Schema(description = "Correo electrónico del usuario (identificador único)", example = "juan.perez@ejemplo.com", required = true)
     private String email;
 
-    // CAMBIADO: antes era "password"
     @Column(nullable = true)
+    @Schema(description = "Contraseña del usuario (será encriptada)", example = "MiPassword123!", required = true, format = "password")
     private String pass;
 
+    @Schema(description = "Número de teléfono del usuario", example = "+57 300 123 4567")
     private String tel;
 
+    @Schema(description = "País de residencia del usuario", example = "Colombia")
     private String pais;
 
     @Enumerated(EnumType.STRING)

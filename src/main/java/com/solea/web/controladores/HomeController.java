@@ -5,6 +5,11 @@ import com.solea.web.model.Rol;
 import com.solea.web.servicios.ServicioPrendas;
 import com.solea.web.servicios.ServicioUsuarios;
 import com.solea.web.model.Prenda;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -16,6 +21,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@Tag(
+    name = "Home", 
+    description = "Endpoints públicos y páginas principales del sitio web. " +
+                  "Incluye página de inicio, catálogo de productos, detalles de productos, " +
+                  "páginas informativas (nosotros, contacto, ayuda) y gestión de navegación del usuario."
+)
 public class HomeController {
 
     private final ServicioUsuarios servicioUsuarios;
@@ -43,6 +54,16 @@ public class HomeController {
     // HOME PÚBLICO
     // ---------------------------------------------------------
 
+    @Operation(
+            summary = "Página principal del sitio",
+            description = "Muestra la página de inicio (landing page) del sitio web con productos destacados. " +
+                         "Detecta si el usuario está autenticado y muestra información personalizada. " +
+                         "Es el punto de entrada principal para visitantes y usuarios registrados."
+    )
+    @ApiResponse(
+            responseCode = "200", 
+            description = "Página principal cargada exitosamente con productos destacados y estado de autenticación"
+    )
     @GetMapping("/")
     public String home(Model model) {
         Usuario u = usuarioActual();
@@ -58,6 +79,17 @@ public class HomeController {
     // DASHBOARD DE USUARIO LOGUEADO
     // ---------------------------------------------------------
 
+    @Operation(
+            summary = "Dashboard de usuario autenticado",
+            description = "Muestra el panel principal (dashboard) del usuario autenticado. " +
+                         "Si el usuario no está autenticado, redirige a la página de login. " +
+                         "Si el usuario tiene rol ADMIN, redirige automáticamente al panel de administración. " +
+                         "Para usuarios normales, muestra su dashboard personalizado con opciones y accesos rápidos."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dashboard de usuario cargado exitosamente"),
+            @ApiResponse(responseCode = "302", description = "Redirige a /auth/login si no está autenticado o a /admin si es administrador")
+    })
     @GetMapping("/inicio")
     public String inicioUsuario(Model model) {
         Usuario u = usuarioActual();
@@ -78,8 +110,23 @@ public class HomeController {
     // OTRAS PÁGINAS
     // ---------------------------------------------------------
 
+    @Operation(
+            summary = "Catálogo de productos con filtros",
+            description = "Muestra el catálogo completo de productos disponibles con opciones de filtrado avanzado. " +
+                         "Permite filtrar por categoría (Hombre, Mujer, Accesorios), por nombre de producto, " +
+                         "o combinar ambos filtros. Si no se especifica ningún filtro, muestra todos los productos. " +
+                         "Maneja errores de búsqueda devolviendo una lista vacía con mensaje informativo."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Catálogo cargado exitosamente con productos filtrados"),
+            @ApiResponse(responseCode = "200", description = "Catálogo cargado con lista vacía si hay error en la búsqueda")
+    })
     @GetMapping("/catalogo")
-    public String catalogo(Model model, @org.springframework.web.bind.annotation.RequestParam(name = "cat", required = false) String cat, @org.springframework.web.bind.annotation.RequestParam(name = "nombre", required = false) String nombre) {
+    public String catalogo(Model model, 
+            @Parameter(description = "Filtro por categoría de producto", example = "Hombre", required = false)
+            @org.springframework.web.bind.annotation.RequestParam(name = "cat", required = false) String cat, 
+            @Parameter(description = "Filtro por nombre o texto en el producto", example = "camisa", required = false)
+            @org.springframework.web.bind.annotation.RequestParam(name = "nombre", required = false) String nombre) {
         try {
             String catTrim = (cat != null && !cat.trim().isEmpty()) ? cat.trim() : null;
             String nombreTrim = (nombre != null && !nombre.trim().isEmpty()) ? nombre.trim() : null;
@@ -112,20 +159,45 @@ public class HomeController {
         }
     }
 
+    @Operation(
+            summary = "Página de contacto",
+            description = "Muestra la página de contacto con formulario para enviar mensajes al equipo del sitio. " +
+                         "Incluye campos para nombre, email, asunto y mensaje."
+    )
+    @ApiResponse(responseCode = "200", description = "Página de contacto cargada exitosamente")
     @GetMapping("/contacto")
     public String contacto(Model model) {
         model.addAttribute("usuario", usuarioActual());
         return "home/contacto";
     }
 
+    @Operation(
+            summary = "Página 'Nosotros'",
+            description = "Muestra información sobre la empresa, misión, visión y equipo. " +
+                         "Página informativa institucional del sitio web."
+    )
+    @ApiResponse(responseCode = "200", description = "Página 'Nosotros' cargada exitosamente")
     @GetMapping("/nosotros")
     public String nosotros(Model model) {
         model.addAttribute("usuario", usuarioActual());
         return "home/nosotros";
     }
 
+    @Operation(
+            summary = "Detalle de producto",
+            description = "Muestra la página de detalle de un producto específico incluyendo: " +
+                         "imagen, nombre, descripción, precio, categoría, stock disponible y productos relacionados. " +
+                         "Si el producto no existe, redirige al catálogo. " +
+                         "Muestra hasta 8 productos relacionados de la misma categoría."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Detalle del producto cargado exitosamente con productos relacionados"),
+            @ApiResponse(responseCode = "302", description = "Producto no encontrado - redirige al catálogo")
+    })
     @GetMapping("/detalle/{id}")
-    public String detalle(@PathVariable int id, Model model) {
+    public String detalle(
+            @Parameter(description = "ID del producto a mostrar", required = true, example = "1")
+            @PathVariable int id, Model model) {
 
         Prenda prenda = servicioPrendas.obtenerPorId(id);
         if (prenda == null) return "redirect:/catalogo";
@@ -167,6 +239,12 @@ public class HomeController {
     }
 
 
+    @Operation(
+            summary = "Página de ayuda",
+            description = "Muestra la página de ayuda con preguntas frecuentes, guías de uso, " +
+                         "políticas de envío y devolución, y métodos de contacto para soporte."
+    )
+    @ApiResponse(responseCode = "200", description = "Página de ayuda cargada exitosamente")
     @GetMapping("/ayuda")
     public String ayuda(Model model) {
         model.addAttribute("usuario", usuarioActual());

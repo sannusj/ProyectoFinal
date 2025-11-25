@@ -2,8 +2,18 @@ package com.solea.web.controladores;
 
 import com.solea.web.model.Rol;
 import com.solea.web.model.Usuario;
+import com.solea.web.dto.EditarPerfilDto;
+import com.solea.web.dto.CambiarPasswordDto;
 import com.solea.web.servicios.ServicioPedidos;
 import com.solea.web.servicios.ServicioUsuarios;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -13,6 +23,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Controller
 @RequestMapping("/perfil")
+@Tag(
+    name = "Perfil", 
+    description = "API de gestión del perfil de usuario autenticado. " +
+                  "Permite ver, editar datos personales, cambiar contraseña y consultar historial de pedidos. " +
+                  "Incluye vistas diferenciadas para usuarios normales y administradores. " +
+                  "Requiere autenticación. Maneja cuentas locales y OAuth."
+)
+@SecurityRequirement(name = "session-auth")
 public class PerfilController {
 
     private final ServicioUsuarios servicioUsuarios;
@@ -42,6 +60,18 @@ public class PerfilController {
     // PERFIL
     // ----------------------------------------------------
 
+    @Operation(
+            summary = "Ver perfil de usuario autenticado",
+            description = "Muestra la página de perfil del usuario actualmente autenticado con toda su información personal: " +
+                         "nombre, email, teléfono, país, fecha de registro, rol y avatar. " +
+                         "Si el usuario no está autenticado, redirige al login. " +
+                         "Si el usuario tiene rol ADMIN, muestra la vista de perfil de administrador. " +
+                         "Los usuarios normales ven su perfil estándar con opciones de edición y cambio de contraseña."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Perfil cargado exitosamente - vista según rol del usuario"),
+            @ApiResponse(responseCode = "302", description = "Usuario no autenticado - redirige al login")
+    })
     @GetMapping
     public String perfil(Model model) {
         Usuario u = usuarioActual();
@@ -61,6 +91,17 @@ public class PerfilController {
     // EDITAR DATOS
     // ----------------------------------------------------
 
+    @Operation(
+            summary = "Formulario de edición de perfil",
+            description = "Muestra el formulario para editar los datos personales del usuario autenticado. " +
+                         "Permite modificar: nombre, teléfono y país. " +
+                         "El email no es editable ya que es el identificador único del usuario. " +
+                         "Los campos se pre-cargan con los valores actuales del usuario."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Formulario de edición cargado con datos actuales"),
+            @ApiResponse(responseCode = "302", description = "Usuario no autenticado - redirige al login")
+    })
     @GetMapping("/editar")
     public String editarForm(Model model) {
         Usuario u = usuarioActual();
@@ -70,11 +111,37 @@ public class PerfilController {
         return "perfil/editar";
     }
 
+    @Operation(
+            summary = "Guardar cambios del perfil editado",
+            description = "Actualiza los datos personales del usuario autenticado en la base de datos. " +
+                         "Valida que todos los campos requeridos estén completos. " +
+                         "Mantiene la contraseña actual sin modificaciones (se cambia por endpoint separado). " +
+                         "Una vez guardado exitosamente, redirige a la página de perfil con los datos actualizados.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Nuevos datos del perfil del usuario",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/x-www-form-urlencoded",
+                            schema = @Schema(implementation = EditarPerfilDto.class)
+                    )
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "302", 
+                    description = "Datos actualizados exitosamente - redirige al perfil"
+            ),
+            @ApiResponse(
+                    responseCode = "400", 
+                    description = "Datos inválidos o incompletos"
+            )
+    })
     @PostMapping("/editar")
-    public String guardarEdicion(@RequestParam String nombre,
-                                 @RequestParam String telefono,
-                                 @RequestParam String pais,
-                                 Model model) {
+    public String guardarEdicion(
+            @Parameter(hidden = true) @RequestParam String nombre,
+            @Parameter(hidden = true) @RequestParam String telefono,
+            @Parameter(hidden = true) @RequestParam String pais,
+            Model model) {
 
         Usuario u = usuarioActual();
         if (u == null) return "redirect:/auth/login";
@@ -88,6 +155,18 @@ public class PerfilController {
     // CAMBIAR PASSWORD
     // ----------------------------------------------------
 
+    @Operation(
+            summary = "Formulario de cambio de contraseña",
+            description = "Muestra el formulario para cambiar la contraseña del usuario autenticado. " +
+                         "Requiere ingresar: contraseña actual (para validación), nueva contraseña y confirmación. " +
+                         "IMPORTANTE: Este endpoint solo funciona para cuentas creadas localmente (Provider.LOCAL). " +
+                         "Los usuarios que ingresaron con OAuth (Google, Facebook, etc.) no pueden cambiar contraseña " +
+                         "ya que se gestiona por el proveedor externo. Se muestra mensaje informativo en esos casos."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Formulario de cambio de contraseña cargado"),
+            @ApiResponse(responseCode = "302", description = "Usuario OAuth - redirige al perfil con mensaje de error")
+    })
     @GetMapping("/password")
     public String cambiarPassForm(Model model) {
         Usuario u = usuarioActual();
@@ -103,11 +182,43 @@ public class PerfilController {
         return "perfil/cambiar-pass";
     }
 
+    @Operation(
+            summary = "Procesar cambio de contraseña",
+            description = "Cambia la contraseña del usuario después de validaciones de seguridad: " +
+                         "1. Verifica que la contraseña actual ingresada sea correcta (usando BCrypt) " +
+                         "2. Valida que las nuevas contraseñas coincidan " +
+                         "3. Encripta la nueva contraseña con BCrypt antes de guardar " +
+                         "4. Solo funciona para usuarios con Provider.LOCAL (cuentas locales) " +
+                         "Si alguna validación falla, retorna al formulario con mensaje descriptivo.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Datos para cambio de contraseña",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/x-www-form-urlencoded",
+                            schema = @Schema(implementation = CambiarPasswordDto.class)
+                    )
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", 
+                    description = "Contraseña cambiada exitosamente - muestra formulario con mensaje de éxito"
+            ),
+            @ApiResponse(
+                    responseCode = "200", 
+                    description = "Error en validación - muestra formulario con mensaje de error"
+            ),
+            @ApiResponse(
+                    responseCode = "403", 
+                    description = "Usuario OAuth - no permitido cambiar contraseña"
+            )
+    })
     @PostMapping("/password")
-    public String cambiarPass(@RequestParam String actual,
-                              @RequestParam String nueva,
-                              @RequestParam String repetir,
-                              Model model) {
+    public String cambiarPass(
+            @Parameter(hidden = true) @RequestParam String actual,
+            @Parameter(hidden = true) @RequestParam String nueva,
+            @Parameter(hidden = true) @RequestParam String repetir,
+            Model model) {
 
         Usuario u = usuarioActual();
         if (u == null) return "redirect:/auth/login";
@@ -145,6 +256,24 @@ public class PerfilController {
     // MIS PEDIDOS
     // ----------------------------------------------------
 
+    @Operation(
+            summary = "Ver historial de pedidos del usuario",
+            description = "Muestra una lista completa de todos los pedidos realizados por el usuario autenticado, " +
+                         "ordenados por fecha (más recientes primero). Cada pedido incluye: " +
+                         "número de pedido, fecha, productos ordenados, total pagado, estado actual (pendiente/enviado/entregado), " +
+                         "dirección de envío y opciones para ver detalles completos. " +
+                         "Útil para hacer seguimiento de compras y descargar comprobantes."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", 
+                    description = "Historial de pedidos cargado exitosamente"
+            ),
+            @ApiResponse(
+                    responseCode = "302", 
+                    description = "Usuario no autenticado - redirige al login"
+            )
+    })
     @GetMapping("/mis-pedidos")
     public String misPedidos(Model model) {
         Usuario u = usuarioActual();
