@@ -52,7 +52,8 @@ public class ServicioCarritoImpl implements ServicioCarrito {
                         pc.getPrenda().getNombre(),
                         pc.getPrenda().getPrecio(),
                         pc.getCantidad(),
-                        pc.getPrenda().getImagenPrenda()
+                        pc.getPrenda().getImagenPrenda(),
+                        pc.getPrenda().getImagePath()
                 ))
                 .collect(Collectors.toList());
     }

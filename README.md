@@ -1,308 +1,170 @@
-# Solea - Tienda Virtual (Resumen del proyecto)
+# Solea - Tienda Virtual
 
-Este README contiene un inventario completo y documentado del código fuente actual del proyecto, incluyendo controladores, servicios, repositorios y modelos, además de instrucciones rápidas para ejecutar y comprobar puntos sensibles (Swagger / OpenAPI, formulario de contacto, logs).
+Proyecto Spring Boot (Java) que implementa una tienda online sencilla llamada "Solea". Usa Thymeleaf para las vistas, JPA/Hibernate para persistencia y Spring Security para autenticación básica.
 
----
-
-## Índice
-
-1. Resumen rápido
-2. Cómo ejecutar el proyecto
-3. Endpoints públicos / REST (controladores y métodos)
-4. Servicios (interfaces e implementaciones) y sus métodos
-5. Repositorios y métodos principales
-6. Modelos (entidades) y sus campos/métodos
-7. Configuración de OpenAPI / Swagger
-8. Formulario de contacto: funcionamiento y ubicación del archivo
-9. Logs y depuración
-10. Notas y recomendaciones
+Este README es la versión final y presentable para el repositorio: describe rápidamente el proyecto, cómo ejecutarlo, los endpoints principales, los modelos/entidades más relevantes y notas útiles para desarrolladores.
 
 ---
 
-## 1) Resumen rápido
+## Contenido
 
-- Proyecto Spring Boot (Java 21) con Thymeleaf para frontend y JPA/Hibernate para persistencia.
-- Estructura principal bajo `src/main/java/com/solea/web/`.
-- Swagger/OpenAPI metadata expuesto por `OpenApiConfig`.
-- El formulario de contacto escribe en un archivo de texto en `uploads/contactos.txt` (implementado por `ServicioContactosImpl`).
+- Resumen
+- Requisitos
+- Ejecución local
+- Endpoints principales (rutas y propósito)
+- Modelos / Entidades (resumen)
+- Servicios y repositorios (resumen)
+- OpenAPI / Swagger
+- Archivos importantes y estructura
+- Pruebas rápidas y verificación
+- Contacto y licencia
 
 ---
 
-## 2) Cómo ejecutar el proyecto (local)
+## Resumen
 
-Requisitos:
+Solea es una aplicación web de comercio electrónico con funcionalidades básicas:
+
+- Catálogo de productos (prendas) con imágenes, descripción, precio y stock.
+- Carrito de compras por usuario autenticado (añadir, actualizar, eliminar, vaciar).
+- Flujo de pedido multi-paso (datos de envío, pago, confirmación) y almacenamiento de pedidos.
+- Área de administración con gestión de usuarios, prendas y pedidos.
+- Almacenamiento híbrido de imágenes: prioriza archivos en disco (imagePath) y hace fallback a BLOB en la base de datos.
+
+Tecnologías principales: Java 21, Spring Boot, Spring MVC, Spring Data JPA, Thymeleaf, Spring Security, Maven.
+
+---
+
+## Requisitos
+
 - JDK 21
-- Maven wrapper incluido (`mvnw` / `mvnw.cmd`)
-- Base de datos MySQL accesible según `application.properties` (por defecto jdbc:mysql://localhost:3306/soleadb)
+- Maven (se incluye `mvnw`/`mvnw.cmd`) o Maven instalado globalmente
+- Base de datos (por defecto MySQL, conexión configurable en `src/main/resources/application.properties`)
 
-Comandos básicos (Windows PowerShell):
+---
+
+## Cómo ejecutar (local)
+
+Desde PowerShell en la raíz del proyecto:
 
 ```powershell
-# limpiar y empaquetar
+# Compilar (sin tests)
 ./mvnw clean package -DskipTests
 
-# ejecutar el JAR generado en target
-java -jar target/solea-tienda-virtual-0.0.1-SNAPSHOT.jar --server.port=8081
+# Ejecutar el JAR (ejemplo puerto 8081)
+java -jar target/solea-*.jar --server.port=8081
 ```
 
+Alternativamente ejecutar desde el IDE (Run / Spring Boot).
+
 Notas:
-- Si necesitas cambiar el puerto, usa `--server.port=XXXX`.
-- Los logs se guardan en `logs/solea.log`.
+- Configura la conexión a la base de datos en `src/main/resources/application.properties` antes de ejecutar en un entorno nuevo.
+- Los logs se almacenan en `logs/solea.log`.
 
 ---
 
-## 3) Endpoints públicos / REST (controladores y métodos)
+## Endpoints principales (resumen)
 
-A continuación se listan los controladores con métodos públicos (ruta, firma y descripción breve).
+Rutas importantes y su propósito (resumen, no exhaustivo):
 
-- `ContactoController` (`/contacto`)
-  - POST `/contacto/enviar` enviar(nombre, email, asunto, mensaje, Model) — Procesa el formulario de contacto y guarda la entrada mediante `ServicioContactos.guardar`.
+- `/` — Página principal (catálogo / home).
+- `/catalogo` — Listado de productos.
+- `/detalle/{id}` — Detalle de prenda.
+- `/carrito` — Carrito del usuario (GET/POST/acciones: agregar/actualizar/eliminar/vaciar).
+- `/pedido/*` — Flujo de pedido (paso1/paso2/paso3, resumen, confirmar).
+- `/auth/*` — Autenticación y registro.
+- `/admin/*` — Panel de administración (usuarios, pedidos, prendas).
+- `/imagenes/{id}` — Endpoint REST que sirve la imagen de una prenda (prioriza imagePath, fallback a BLOB).
+- `/v3/api-docs` y `/swagger-ui.html` (si está configurado) — OpenAPI / Swagger UI.
 
-- `ImagenController`
-  - GET `/imagenes/{id}` imagenPrenda(id) — Devuelve la imagen de una prenda (prioriza `imagePath` en disco; fallback a `imagenPrenda` en BD).
-
-- `HomeController`
-  - GET `/` home(Model) — Página principal.
-  - GET `/inicio` inicioUsuario(Model) — Dashboard (requiere login).
-  - GET `/catalogo` catalogo(Model, cat?, nombre?) — Catálogo con filtros.
-  - GET `/contacto` contacto(Model) — Página contact.
-  - GET `/detalle/{id}` detalle(id, Model) — Detalle de prenda.
-  - GET `/nosotros`, GET `/ayuda`
-
-- `PedidoController` (`/pedido`)
-  - GET `/pedido/paso1` mostrarPaso1(Model)
-  - POST `/pedido/paso1` procesarPaso1(nombre, direccion, provincia)
-  - GET `/pedido/paso2` mostrarPaso2(Model)
-  - POST `/pedido/paso2` procesarPaso2(titular, numero, tipoTarjeta)
-  - GET `/pedido/paso3` mostrarPaso3(Model)
-  - POST `/pedido/paso3` procesarPaso3(regalo?, observaciones?)
-  - GET `/pedido/resumen` resumen(Model)
-  - POST `/pedido/confirmar` confirmarPedido(Model)
-  - GET `/pedido/pdf` descargarPdf() — actualmente redirige (no implementado).
-
-- `CarritoController` (`/carrito`)
-  - GET `/carrito` verCarrito(Model)
-  - POST `/carrito/agregar` agregarProducto(prendaId, cantidad)
-  - POST `/carrito/actualizar` actualizarCantidad(prendaId, cantidad)
-  - POST `/carrito/eliminar` eliminarProducto(prendaId)
-  - POST `/carrito/vaciar` vaciarCarrito()
-  - GET `/carrito/checkout` irAlCheckout() — redirige a `/pedido/paso1`.
-
-- `AuthController` (`/auth`)
-  - GET `/auth/login` login()
-  - GET `/auth/registro` registro(Model, request)
-  - POST `/auth/registro` procesarRegistro(Usuario, Model, request)
-
-- `AdminController` (`/admin`)
-  - GET `/admin` adminHome()
-  - GET `/admin/usuarios` listarUsuarios(Model)
-  - GET `/admin/usuarios/{id}` detalleUsuario(id, Model)
-  - POST `/admin/usuarios/{id}/cambiar-rol` cambiarRol(id, nuevoRol, Model)
-  - GET `/admin/pedidos` listarPedidos(Model)
-  - GET `/admin/pedidos/{id}` verPedido(id, Model)
-  - POST `/admin/pedidos/{id}/estado` cambiarEstadoPedido(id, estado)
-  - GET `/admin/perfil` perfilAdminRedirect() — redirige a `/perfil`.
-
-- `PerfilController` (`/perfil`)
-  - GET `/perfil` perfil(Model)
-  - GET `/perfil/editar` editarForm(Model)
-  - POST `/perfil/editar` guardarEdicion(nombre, telefono, pais, Model)
-  - GET `/perfil/password` cambiarPassForm(Model)
-  - POST `/perfil/password` cambiarPass(actual, nueva, repetir, Model)
-  - GET `/perfil/mis-pedidos` misPedidos(Model)
-
-- `UsuarioController`
-  - GET `/usuario/avatar/{id}` avatar(id) — Devuelve avatar binario del usuario.
-
-- `PrendaController` (admin - `/admin/prendas`)
-  - GET `/admin/prendas` listar(Model)
-  - GET `/admin/prendas/nueva` nueva(Model)
-  - POST `/admin/prendas/guardar` guardar(Prenda, categoriaId?, imagenFile)
-  - GET `/admin/prendas/{id}/editar` editar(id, Model)
-  - POST `/admin/prendas/{id}/editar` editarGuardar(...) — actualizar prenda y opcional imagen
-  - POST `/admin/prendas/{id}/eliminar` eliminar(id)
+Para detalles por método y parámetros consulta los controladores en `src/main/java/com/solea/web/controladores`.
 
 ---
 
-## 4) Servicios (interfaces e implementaciones)
+## Modelos / Entidades (resumen)
 
-- `ServicioContactos` (interface)
-  - `void guardar(Contacto c)` — Implementado por `ServicioContactosImpl` que escribe en `uploads/contactos.txt`.
+Entidades principales y campos más relevantes:
 
-- `ServicioUsuarios` (interface) — Implementación `ServicioUsuarioImpl` con métodos como:
-  - `void registarUsuario(Usuario u)`
-  - `Usuario obtenerUserPorMailYpass(String email, String pass)`
-  - `Usuario obtenerUserPorEmail(String email)`
-  - `Usuario obtenerUserPorId(int id)`
-  - `List<Usuario> obtenerUsuarios()`
-  - `void actualizarDatos(Integer id, String nombreUsuario, String pass, String telefono, String pais)`
-  - `UsuarioDetalleResponse nativeObtenerUserPorId(int id)`
-  - `void guardarCambiosUsuario(Usuario usuarioEditar)`
-  - `void cambiarRolUsuario(Integer id, Rol nuevoRol)`
-  - `boolean esUltimoAdmin(Integer idUsuario)`
-  - `Usuario processOAuthPostLogin(String providerName, Map<String,Object> attributes)`
+- Usuario
+  - id, nombre, email, pass, tel, pais, rol (ENUM), avatar (BLOB), provider, oauthId
 
-- `ServicioPrendas` / `ServicioPrendasImpl` — CRUD y gestión de imágenes.
-- `ServicioPedidos` / `ServicioPedidosImpl` — Procesos multi-paso del pedido y confirmación.
-- `ServicioCarrito` / `ServicioCarritoImpl` — Agregar/actualizar/eliminar/vaciar carrito.
-- `ServicioCategorias` — gestionar categorías (interface presente; implementación no detallada en este README).
+- Prenda
+  - id, nombre, precio, stock, alta (activo), imagenPrenda (BLOB), imagePath (ruta en disco), descripcion, talla, categoria
 
----
+- Categoria
+  - id, nombre, lista de prendas
 
-## 5) Repositorios (Spring Data JPA)
+- Carrito
+  - id, usuario (uno-a-uno), productosCarrito (lista de ProductoCarrito)
 
-- `UsuarioRepository` — findByEmail, findByRol, countByRol, findByProviderAndOauthId, findByProviderAndEmail
-- `PrendaRepository` — findAllWithCategoria, findByIdWithCategoria, búsquedas por nombre y categoría
-- `PedidoRepository` — findByUsuario_IdOrderByIdDesc, findActivosPorUsuario, findByIdWithProductosAndPrendas
-- `ProductoCarritoRepository` — findByCarrito_Id, findByCarrito_IdAndPrenda_Id, deleteByCarrito_IdAndPrenda_Id, deleteByCarrito_Id
-- `PedidoTempRepository` — findByUsuario_Id, deleteByUsuario_Id
-- `CarritoRepository` — findByUsuario_Id
+- ProductoCarrito
+  - id, prenda, carrito, cantidad
+
+- Pedido
+  - id, usuario, productos (lista de ProductoPedido), datos de envío/pago, total, estado, fechas
+
+- ProductoPedido
+  - id, pedido, prenda, cantidad, precioUnitario, subtotal
+
+- PedidoTemp
+  - id, usuario, campos temporales usados en el flujo multi-paso (envío/pago/observaciones)
+
+> Nota: los detalles completos de campos, relaciones y constraints están en el código fuente bajo `src/main/java/com/solea/web/model`.
 
 ---
 
-## 6) Modelos / Entidades (campos y getters/setters principales)
+## Servicios y repositorios (resumen)
 
-Documentación resumida de las entidades centrales:
+Servicios principales (interfaces + implementaciones) manejan la lógica de negocio:
 
-- `Contacto` (no es entidad JPA; POJO):
-  - Campos: nombre, email, asunto, mensaje, fecha
-  - Métodos: getters/setters, constructor y `toString()` formateado para archivo
+- `ServicioCarrito` / `ServicioCarritoImpl` — gestión del carrito.
+- `ServicioPrendas` — CRUD y gestión de imágenes de prendas.
+- `ServicioPedidos` — flujo multipart y confirmación de pedidos.
+- `ServicioUsuarios` — gestión de usuarios y autenticación.
+- `ServicioContactos` — procesamiento del formulario de contacto (escribe en `uploads/contactos.txt`).
 
-- `Usuario` (entidad JPA)
-  - Campos: id, nombre, email, pass, tel, pais, rol (enum), avatar, provider (enum), oauthId
-  - Métodos: getters y setters estándar
-
-- `Prenda` (entidad JPA)
-  - Campos: id, nombre, precio, stock, alta, imagenPrenda (LOB), categoria, descripcion, talla, imagePath
-  - Métodos: getters/setters (setPrecio y setStock normalizan valores no-negativos)
-
-- `Pedido` (entidad JPA)
-  - Campos: id, usuario, productos (ProductoPedido), datos del paso1/paso2/paso3, total, estado (enum), fechas
-  - Métodos: getters/setters, preUpdate para fechaActualizacion
-
-(Otras entidades: `ProductoPedido`, `ProductoCarrito`, `Carrito`, `Categoria`, `PedidoTemp`, `Rol`, `UsuarioDetalleResponse` están en el código; si quieres las detallo explícitamente, puedo añadirlas en una sección extra).
+Repositorios Spring Data JPA en `src/main/java/com/solea/web/repositorios` proveen métodos para consultas comunes (ej. `findByCarrito_Id`, `findByUsuario_Id`, búsquedas por nombre/categoría, etc.).
 
 ---
 
-## Entidades restantes (detalladas)
+## OpenAPI / Swagger
 
-A continuación se describen las entidades que quedaron pendientes en la sección 6. Incluyo campos principales, métodos (getters/setters) y notas de uso observadas en el código.
-
-- `ProductoPedido` (entidad JPA)
-  - Campos principales:
-    - `Integer id`
-    - `Pedido pedido` (relación ManyToOne)
-    - `Prenda prenda` (relación ManyToOne)
-    - `int cantidad`
-    - `Double precioUnitario`
-    - `Double subtotal`
-  - Métodos:
-    - Getters y setters estándar (`getId`, `getPedido`, `setPedido`, `getPrenda`, `setPrenda`, `getCantidad`, `setCantidad`, `getPrecioUnitario`, `setPrecioUnitario`, `getSubtotal`, `setSubtotal`).
-    - `calcularSubtotal()` — método que calcula `subtotal = precioUnitario * cantidad` (usado en `ServicioPedidosImpl`).
-  - Notas: instanciada cuando se transforma `ProductoCarrito` en `ProductoPedido` durante la confirmación del pedido.
-
-- `ProductoCarrito` (entidad JPA)
-  - Campos principales:
-    - `Integer id`
-    - `Prenda prenda` (ManyToOne)
-    - `Carrito carrito` (ManyToOne)
-    - `int cantidad`
-  - Métodos:
-    - Getters/setters estándar y posiblemente un constructor de conveniencia `ProductoCarrito(Prenda prenda, Carrito carrito, int cantidad)` (empleado por `ServicioCarritoImpl`).
-  - Notas: repositorio `ProductoCarritoRepository` ofrece búsqueda por carrito y prenda.
-
-- `Carrito` (entidad JPA)
-  - Campos principales:
-    - `Integer id`
-    - `Usuario usuario` (OneToOne o ManyToOne dependiendo de diseño)
-    - `List<ProductoCarrito> productosCarrito`
-  - Métodos:
-    - Getters/setters (`getId`, `getUsuario`, `setUsuario`, `getProductosCarrito`, `setProductosCarrito`).
-    - `addProducto(ProductoCarrito pc)` — método de conveniencia para añadir un `ProductoCarrito` a la lista (usado por `ServicioCarritoImpl`).
-  - Notas: creado automáticamente si no existe al agregar un producto al carrito.
-
-- `Categoria` (entidad JPA)
-  - Campos principales:
-    - `Integer id`
-    - `String nombre`
-  - Métodos:
-    - Getters/setters (`getId`, `getNombre`, `setNombre`), y un constructor `Categoria(String nombre)` usado para inicializar categorías por defecto en `PrendaController`.
-
-- `PedidoTemp` (entidad JPA para el flujo multipaso)
-  - Campos principales:
-    - `Integer id`
-    - `Usuario usuario` (ManyToOne)
-    - `String nombre` (paso1)
-    - `String direccion` (paso1)
-    - `String provincia` (paso1)
-    - `String titularTarjeta` (paso2)
-    - `String numeroTarjeta` (paso2)
-    - `String tipoTarjeta` (paso2)
-    - `String paraRegalo` (paso3, valores "si"/"no")
-    - `String observaciones` (paso3)
-  - Métodos:
-    - Getters/setters estándar (getNombre, setNombre, getDireccion, setDireccion, etc.).
-  - Notas: `ServicioPedidosImpl` crea/actualiza `PedidoTemp` durante los pasos y lo borra en `confirmarPedido`.
-
-- `Rol` (enum)
-  - Valores esperados:
-    - `ADMIN`
-    - `USER`
-  - Uso: control de acceso y lógica de interfaz (por ejemplo: evitar que administradores usen el carrito). Repositorio `UsuarioRepository` puede consultar por `Rol`.
-
-- `UsuarioDetalleResponse` (DTO para respuestas web)
-  - Campos principales:
-    - `Integer id`
-    - `String nombre`
-    - `String email`
-    - `String tel`
-    - `String pais`
-    - `String rol` (nombre del rol)
-  - Métodos: getters/setters estándar.
-  - Uso: devuelto por `ServicioUsuarios.nativeObtenerUserPorId(int)` para respuestas API ligeras.
+El proyecto incluye anotaciones OpenAPI en controladores. Si la dependencia de Swagger/OpenAPI está presente, podrás acceder a la especificación en `/v3/api-docs` y a la interfaz Swagger UI en `/swagger-ui.html`.
 
 ---
 
-## 7) OpenAPI / Swagger
+## Archivos y estructura importantes
 
-- Metadatos en `OpenApiConfig` (`com.solea.web.config.OpenApiConfig`): expone título, versión y descripción mediante la anotación `@OpenAPIDefinition`.
-- Endpoint OpenAPI JSON por defecto (si `springdoc` está correctamente configurado): `GET /v3/api-docs`.
-- Interfaz Swagger-UI (si `springdoc-openapi-starter-webmvc-ui` está en classpath): `GET /swagger-ui.html` o `/swagger-ui/index.html`.
-
-Nota importante: en este proyecto ya se hicieron ajustes sobre dependencias `springdoc` para resolver conflictos de versiones. Si ves errores tipo `NoSuchMethodError` relacionados con `ControllerAdviceBean` al cargar `/v3/api-docs`, suele ser un conflicto de versiones entre `springdoc` y `spring-web` — la solución es alinear la versión de `springdoc` con la de Spring Boot / Spring Web usada. Si quieres, reviso y aseguro la versión exacta y hago un ajuste mínimo en `pom.xml`.
-
----
-
-## 8) Formulario de contacto (comportamiento)
-
-- HTML frontend: plantilla `src/main/resources/templates/home/contacto.html` (vista) presenta un formulario que `POST`s a `/contacto/enviar`.
-- Procesamiento: `ContactoController.enviar(...)` crea `Contacto` con `LocalDateTime.now()` y llama `servicioContactos.guardar(c)`.
-- Persistencia: `ServicioContactosImpl.guardar(Contacto)` escribe en un archivo de texto `contactos.txt` dentro del directorio `uploads` (por defecto). El valor de la propiedad `app.upload.dir` controla la carpeta; por defecto `uploads`.
-- Ubicación de salida: si `app.upload.dir` = `uploads` (por defecto), el archivo final será `uploads/contactos.txt`. Si `app.upload.dir` incluye subcarpeta (ej `uploads/prendas`), la implementación ajusta la ruta para crear el archivo `uploads/contactos.txt` en el padre.
+- `src/main/java/com/solea/web/` — código fuente (controladores, servicios, repositorios, modelos, config)
+- `src/main/resources/templates/` — plantillas Thymeleaf (vistas)
+- `src/main/resources/static/` — recursos estáticos (CSS, JS, imágenes de ejemplo)
+- `uploads/` — carpeta donde se guardan archivos subidos (imágenes, contactos.txt)
+- `logs/solea.log` — archivo de logs
+- `diagram.puml`, `schema.sql`, `ENTITIES_SUMMARY.md` — documentos generados con el modelo ER y esquema (si están presentes en la raíz del repo)
 
 ---
 
-## 9) Logs y depuración
+## Pruebas rápidas / Verificación
 
-- Archivo de logs: `logs/solea.log` (contiene excepciones y trazas). Si hay errores al abrir `/v3/api-docs` o Swagger, revisa este archivo para encontrar `NoSuchMethodError` o conflictos de versión.
-- Si la app devuelve HTML 500 en `/v3/api-docs`, busca en `solea.log` las líneas con `springdoc` o `NoSuchMethodError` para diagnosticar versión incompatible.
-
----
-
-## 10) Notas y recomendaciones
-
-- No modifiqué la lógica existente; este README es sólo documentación.
-- Si quieres que genere la documentación OpenAPI (archivo YAML/JSON) directamente a partir de las rutas existentes, puedo:
-  1) Añadir anotaciones `@Operation`, `@Parameter` en controladores (cambio de código), o
-  2) Generar un archivo manual `openapi.yaml` basado en los controladores leídos (sin tocar código).
-
-- Si prefieres que arregle los problemas con Swagger/springdoc (versiones), puedo aplicar el cambio mínimo en `pom.xml` para alinear versiones y reconstruiar; en el pasado reciente se detectó un conflicto entre `springdoc` 2.2.0 y la versión de `spring-web` empaquetada.
+- Verificar que la app arranca y la página `/` responde.
+- Iniciar sesión con un usuario y comprobar que `/carrito` muestra productos añadidos.
+- Probar subida y visualización de imágenes: al crear/editar una prenda se puede subir una imagen o indicar `imagePath`; la URL `/imagenes/{id}` debe devolver la imagen.
+- Revisar `logs/solea.log` si ocurre un error y consultar trazas.
 
 ---
 
-Si quieres, actualizo el README con:
-- Detalle completo de las entidades restantes (`ProductoPedido`, `ProductoCarrito`, `Carrito`, `Categoria`, `PedidoTemp`, `Rol`, `UsuarioDetalleResponse`).
-- Un `openapi.yaml` derivado automáticamente a partir de los controladores (sin modificar código).
-- Ajustes mínimos en `pom.xml` para dejar Swagger funcionando sin errores (con pruebas de `/v3/api-docs`).
+## Contribuir / Desarrollo
 
-Indícame cuál de los tres prefieres y procedo.
+- Clona el repositorio, crea una rama para la tarea (`feature/...` o `fix/...`) y envía un Pull Request.
+- Mantén las dependencias en `pom.xml` actualizadas con versiones compatibles con Spring Boot en uso.
+- Añade comentarios y tests unitarios cuando modifiques lógica crítica (servicios, repositorios, controladores).
+
+---
+
+## Contacto y licencia
+
+Este proyecto fue desarrollado como ejemplo/ejercicio. Para preguntas o colaboración abre un issue en el repositorio.
+
+---
+
+Gracias por revisar el proyecto. Si quieres que añada diagramas (PlantUML), migraciones (Flyway/Liquibase) o un `openapi.yaml` exportado, dímelo y lo agrego como archivos separados.

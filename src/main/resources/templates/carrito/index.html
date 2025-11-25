@@ -12,7 +12,11 @@
 
 <div class="container" style="max-width:1100px; padding-top:40px; padding-bottom:40px;">
 
-    <h2 class="mb-4 fw-bold">🛒 Mi Carrito</h2>
+    <!-- Cabecera del carrito -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold">🛒 Mi Carrito</h2>
+        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm">&larr; Volver a la tienda</a>
+    </div>
 
     <!-- Si el carrito está vacío -->
     <div th:if="${productos.size() == 0}" class="alert alert-info text-center">
@@ -25,9 +29,9 @@
 
             <!-- Imagen del producto -->
             <div class="col-md-2 text-center">
-                <img th:src="${item.imagen}"
-                     class="img-fluid rounded" style="width:120px; height:120px; object-fit:cover;" alt="Producto" th:if="${item.imagen != null}" />
-                <img src="https://via.placeholder.com/120" class="img-fluid rounded" style="width:120px; height:120px; object-fit:cover;" alt="Producto" th:if="${item.imagen == null}" />
+                <!-- Usar un ternario: si item.imagen existe (puede ser data URI o "/imagenes/{id}"), mostrarlo; si no, usar placeholder -->
+                <img th:src="${item.imagen != null ? item.imagen : 'https://via.placeholder.com/120'}"
+                     class="img-fluid rounded" style="width:120px; height:120px; object-fit:cover;" alt="Producto" />
             </div>
 
             <!-- Información -->
